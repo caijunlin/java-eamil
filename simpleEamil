@@ -1,0 +1,56 @@
+package com.jf.controller.email;
+
+import org.springframework.context.ApplicationContext;
+
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+/**
+ * JavaMail 版本: 1.6.0
+ * JDK 版本: JDK 1.7 以上（必须）
+ */
+public class Email {
+
+    public static String receiveMailAccount = "caijunjie1987@outlook.com";
+
+    public static void main(String[] args) throws Exception {
+        Properties p = new Properties();
+        p.load(Email.class.getClassLoader().getResourceAsStream("email.properties"));
+        String email = p.getProperty("mail.smtp.email");
+        String password = p.getProperty("mail.smtp.password");
+        Session session = Session.getInstance(p);
+        session.setDebug(true);
+        MimeMessage message = createMimeMessage(session, email, receiveMailAccount);
+        Transport transport = session.getTransport();
+        transport.connect(email, password);
+        transport.sendMessage(message, message.getAllRecipients());
+        transport.close();
+    }
+
+    /**
+     * 创建一封只包含文本的简单邮件
+     *
+     * @param session 和服务器交互的会话
+     * @param sendMail 发件人邮箱
+     * @param receiveMail 收件人邮箱
+     * @return
+     * @throws Exception
+     */
+    private static MimeMessage createMimeMessage(Session session, String sendMail, String receiveMail) throws Exception {
+        MimeMessage message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(sendMail, "某宝网", "UTF-8"));
+        message.setRecipient(MimeMessage.RecipientType.TO, new InternetAddress(receiveMail, "XX用户", "UTF-8"));
+        message.setSubject("打折钜惠", "UTF-8");
+        message.setContent("XX用户你好, 今天全场5折, 快来抢购, 错过今天再等一年。。。", "text/html;charset=UTF-8");
+        message.setSentDate(new Date());
+        message.saveChanges();
+        return message;
+    }
+}
